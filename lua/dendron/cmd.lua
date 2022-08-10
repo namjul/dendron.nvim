@@ -1,4 +1,4 @@
-local utils = require('namjul/dendron/utils')
+local utils = require('dendron/utils')
 local Job = require('plenary/job')
 
 local M = {}

@@ -1,8 +1,8 @@
-local utils = require('namjul/dendron/utils')
+local utils = require('dendron/utils')
 local context_manager = require('plenary/context_manager')
 local Job = require('plenary/job')
-local yaml = require('namjul/dendron/lua-yaml/yaml')
-local cmd = require('namjul/dendron/cmd')
+local yaml = require('dendron/lua-yaml/yaml')
+local cmd = require('dendron/cmd')
 
 local uv = vim.loop
 local with = context_manager.with
@@ -27,7 +27,7 @@ function M.start_engine(opts)
   vim.cmd([[
       augroup DendronJobStop
       autocmd!
-      au VimLeave * lua require'namjul.dendron'.stop()
+      au VimLeave * lua require'dendron'.stop()
       augroup END
     ]])
 

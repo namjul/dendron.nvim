@@ -1,6 +1,6 @@
-local dendron = require('namjul/dendron')
--- local cmd = require('namjul/dendron.cmd')
-local telescope = require('namjul/dendron/_telescope')
+local dendron = require('dendron')
+-- local cmd = require('dendron.cmd')
+local telescope = require('dendron/_telescope')
 
 dendron.setup({
   dendron_dir = '~/Dropbox/dendron',
