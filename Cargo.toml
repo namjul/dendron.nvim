@@ -1,0 +1,12 @@
+[package]
+name = "dendron-nvim"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+home = "0.5.4"
+neovim-lib = "0.6.1"
+sqlite = "0.30.3"
+yaml-rust = "0.4.5"
