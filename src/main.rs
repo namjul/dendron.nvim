@@ -1,4 +1,7 @@
 use serde::{Deserialize, Serialize};
+use std::error;
+use std::fmt;
+// use serde::de::Error;
 use sqlite::Connection;
 use std::fs;
 use std::path::Path;
@@ -13,8 +16,21 @@ pub static DENDRON_DB_FILE: &str = ".dendron.metadata.db";
 #[derive(Debug)]
 enum DendronError {
     Sqlite(sqlite::Error),
-    Other,
+    // Other,
+    // NotFound,
 }
+
+impl fmt::Display for DendronError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            DendronError::Sqlite(ref err) => err.fmt(f),
+            // DendronError::Other => writeln!(f, "other"),
+            // DendronError::NotFound => writeln!(f, "not found"),
+        }
+    }
+}
+
+impl error::Error for DendronError {}
 
 impl From<sqlite::Error> for DendronError {
     fn from(err: sqlite::Error) -> DendronError {
