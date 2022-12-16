@@ -1,10 +1,9 @@
+use serde::{Deserialize, Serialize};
 use sqlite::Connection;
 use std::fs;
-use std::io;
 use std::path::Path;
 use std::path::PathBuf;
 use std::result;
-use yaml_rust::YamlLoader;
 
 // constants
 pub static DENDRON_CONFIG_FILE: &str = "dendron.yml";
@@ -92,24 +91,13 @@ impl SqliteMetaDataStore {
 
 trait FileStore {}
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
+struct DConfigWorkspace {}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct DConfig {
     version: i64,
-}
-
-impl DConfig {
-    pub fn new(config_root: &PathBuf) -> io::Result<DConfig> {
-        let x = config_root.join(DENDRON_CONFIG_FILE);
-        println!("load config from {:#?}", x);
-        return fs::read_to_string(x).map(|value| {
-            let docs =
-                YamlLoader::load_from_str(&value.to_string()).expect("Could not parse yaml file");
-            let doc = &docs[0];
-            DConfig {
-                version: doc["version"].as_i64().unwrap(),
-            }
-        });
-    }
+    workspace: DConfigWorkspace,
 }
 
 fn main() {
@@ -119,7 +107,10 @@ fn main() {
             None => panic!("No workspace root found"),
         };
 
-    let d_config = DConfig::new(&ws_root);
+    let d_config = fs::read_to_string(&ws_root.join(DENDRON_CONFIG_FILE)).map(|value| {
+        let d_config: DConfig = serde_yaml::from_str(&value.to_string()).unwrap();
+        return d_config;
+    });
 
     let db_file_path = ws_root.join(DENDRON_DB_FILE);
 
@@ -130,7 +121,7 @@ fn main() {
     let result = sqlite_meta_data_store.query(None);
 
     println!("{:#?}", result);
-    println!("{:#?}", d_config.unwrap().version);
+    println!("{:#?}", d_config);
 }
 
 // sqlite helpers
@@ -138,6 +129,5 @@ fn main() {
 fn create_empty_db(db_file_path: PathBuf) -> Result<Connection> {
     let connection = sqlite::open(db_file_path).map_err(DendronError::Sqlite);
     // TODO  create empty tables
-    return connection
+    return connection;
 }
-
