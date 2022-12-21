@@ -1,91 +1,9 @@
-use sqlite::{Connection, Statement};
+use dendron_nvim::constants::DENDRON_DB_FILE;
+use dendron_nvim::config;
 use std::path::Path;
-use std::path::PathBuf;
-use std::result;
-mod config;
-mod error;
-
-// constants
-pub static DENDRON_CONFIG_FILE: &str = "dendron.yml";
-pub static DENDRON_DB_FILE: &str = ".dendron.metadata.db";
-
-type Result<T> = result::Result<T, error::DendronError>;
-
-// traits
-trait Disposable {
-    fn dispose() -> ();
-}
-trait DataStore<V> {
-    // fn get<K>(key: K) -> Result<V>;
-    // fn find(opts: dyn Any) -> Result<Vec<V>>;
-    // fn write<K>(key: K, data: V) -> Result<K>;
-    // fn delete<K>(key: K) -> Result<String>;
-    fn query(&self, query_string: Option<String>) -> Result<Vec<V>>;
-}
-
-#[derive(Debug)]
-struct DNoteLink {
-    // type: "ref" | "wiki" | "md" | "backlink" | "linkCandidate" | "frontmatterTag";
-    // position?: Position;
-    // from: DNoteLoc;
-    // to?: DNoteLoc;
-    // data: TData;
-}
-
-#[derive(Debug)]
-struct NotePropsMeta {
-    fname: String,
-    links: Vec<DNoteLink>,
-    // anchors: { [index: string]: DNoteAnchorPositioned | undefined };
-    // type: DNodeType;
-    // stub?: boolean;
-    // schemaStub?: boolean;
-    // parent: DNodePointer | null;
-    // children: DNodePointer[];
-    // data: T;
-    // body: string;
-    // custom?: TCustom;
-    // schema?: { moduleId: string; schemaId: string };
-    // vault: DVault;
-    // contentHash?: string;
-    // color?: string;
-    // tags?: string | string[];
-    // image?: DNodeImage;
-    // traits?: string[];
-}
-
-struct SqliteMetaDataStore {
-    connection: Connection,
-}
-
-impl DataStore<NotePropsMeta> for SqliteMetaDataStore {
-    fn query(&self, query_string: Option<String>) -> Result<Vec<NotePropsMeta>> {
-        if query_string.is_none() {
-            let sql = format!("SELECT * FROM NoteProps WHERE fname = '{}'", "root");
-            self.connection.execute(sql)?
-        }
-
-        // self.connection.execute
-        Ok(vec![])
-    }
-}
-
-impl SqliteMetaDataStore {
-    fn new(connection: Connection) -> Self {
-        Self { connection }
-    }
-}
-
-trait FileStore {}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct DConfigWorkspace {}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct DConfig {
-    version: i64,
-    workspace: DConfigWorkspace,
-}
+use dendron_nvim::create_empty_db;
+use dendron_nvim::SqliteMetaDataStore;
+use dendron_nvim::DataStore;
 
 fn main() {
     let ws_root =
@@ -106,12 +24,4 @@ fn main() {
 
     println!("{:#?}", result);
     println!("{:#?}", d_config);
-}
-
-// sqlite helpers
-
-fn create_empty_db(db_file_path: PathBuf) -> Result<Connection> {
-    let connection = sqlite::open(db_file_path).map_err(error::DendronError::Sqlite)?;
-    // TODO  create empty tables
-    return Ok(connection);
 }
