@@ -1,3 +1,4 @@
+use super::error;
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;
@@ -13,13 +14,11 @@ pub struct DConfig {
 
 impl DConfig {
     pub fn new(path: &PathBuf) -> crate::Result<Self> {
-        let d_config = fs::read_to_string(path.join(crate::DENDRON_CONFIG_FILE))
+        fs::read_to_string(path.join(crate::DENDRON_CONFIG_FILE))
             .map(|value| {
                 let d_config: DConfig = serde_yaml::from_str(&value.to_string()).unwrap();
                 return d_config;
             })
-            .map_err(crate::DendronError::Io);
-
-        return d_config;
+            .map_err(error::DendronError::Io)
     }
 }
