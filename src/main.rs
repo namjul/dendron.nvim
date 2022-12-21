@@ -1,12 +1,12 @@
 use serde::{Deserialize, Serialize};
+use sqlite::{Connection, Statement};
 use std::error;
 use std::fmt;
-// use serde::de::Error;
-use sqlite::Connection;
-use std::fs;
+use std::io;
 use std::path::Path;
 use std::path::PathBuf;
 use std::result;
+mod config;
 
 // constants
 pub static DENDRON_CONFIG_FILE: &str = "dendron.yml";
@@ -14,8 +14,9 @@ pub static DENDRON_DB_FILE: &str = ".dendron.metadata.db";
 
 // Errors
 #[derive(Debug)]
-enum DendronError {
+pub enum DendronError {
     Sqlite(sqlite::Error),
+    Io(io::Error)
     // Other,
     // NotFound,
 }
@@ -24,6 +25,7 @@ impl fmt::Display for DendronError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
             DendronError::Sqlite(ref err) => err.fmt(f),
+            DendronError::Io(ref err) => err.fmt(f),
             // DendronError::Other => writeln!(f, "other"),
             // DendronError::NotFound => writeln!(f, "not found"),
         }
@@ -31,6 +33,12 @@ impl fmt::Display for DendronError {
 }
 
 impl error::Error for DendronError {}
+
+impl From<io::Error> for DendronError {
+    fn from(err: io::Error) -> DendronError {
+        DendronError::Io(err)
+    }
+}
 
 impl From<sqlite::Error> for DendronError {
     fn from(err: sqlite::Error) -> DendronError {
@@ -123,10 +131,7 @@ fn main() {
             None => panic!("No workspace root found"),
         };
 
-    let d_config = fs::read_to_string(&ws_root.join(DENDRON_CONFIG_FILE)).map(|value| {
-        let d_config: DConfig = serde_yaml::from_str(&value.to_string()).unwrap();
-        return d_config;
-    });
+    let d_config = config::DConfig::new(&ws_root);
 
     let db_file_path = ws_root.join(DENDRON_DB_FILE);
 
